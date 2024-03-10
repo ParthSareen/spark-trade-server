@@ -13,14 +13,28 @@ energy_market = EnergyMarket()
 def toggle_grid_view():
     st.write("Initial grid with buyers:")
     grid_df = pd.DataFrame(energy_market.grid)
+    def prettify_grid_value(value):
+        if isinstance(value, str) and "_" in value:
+            parts = value.split("_")
+            name = parts[0]
+            price = parts[1]
+            action = "sells" if parts[2] == "False" else "buys"
+            return f"{name} {action} at price: {price}"
+        return value
+
+    grid_df = grid_df.applymap(prettify_grid_value)
     print(grid_df)
-    st.dataframe(grid_df.style.applymap(lambda x: 'background-color: green' if x.endswith('_True') else ('background-color: orange' if x.endswith('_False') else ''), subset=grid_df.columns))
+    st.dataframe(grid_df.style.applymap(lambda x: 'background-color: green' if 'sells' in x else ('background-color: orange' if 'buys' in x else ''), subset=grid_df.columns))
 
-option = st.selectbox("Choose an action:", ["", "Grid View", "Create Sell Bid"])
+grid_view_expander = st.expander("Grid View", expanded=True)
+with grid_view_expander:
+    if st.button("Refresh Grid View"):
+        toggle_grid_view()
+    else:
+        toggle_grid_view()
 
-if option == "Grid View":
-    toggle_grid_view()
-elif option == "Create Sell Bid":
+create_sell_bid_expander = st.expander("Create Sell Bid")
+with create_sell_bid_expander:
     with st.form("sell_bid_form"):
         st.write("Enter your sell bid details:")
         seller_name = "Seller1"

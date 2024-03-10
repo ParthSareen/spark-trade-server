@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 from market_operations.market import EnergyMarket, Bid
 from icecream import ic
+import altair as alt
+st.session_state['authenticated'] = False
+st.session_state['user'] = ''
 
 # Initialize the EnergyMarket
 market = EnergyMarket()
@@ -20,14 +23,27 @@ def get_open_calls(market):
     df = pd.DataFrame(data)
     return df
 # Function to generate a line chart for mAh vs. Time
-def generate_line_chart():
-    # Sample data for a chart with decreasing, flat, and again decreasing patterns
+def generate_energy_price_forecast_chart():
+    # Updated sample data to simulate energy price fluctuations similar to stock prices
     data = {
-        "Time (minutes)": [10, 20, 30, 40, 50, 60, 70, 80, 90],
-        "mAh": [10000, 9000, 8000, 8000, 7000, 7000, 6000, 4000, 2000]  # Adjusted values to include flat portions
+        "Time (hours)": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        "Price (CAD/mAh)": [50, 55, 53, 58, 62, 58, 64, 63, 61]  # Updated simulated energy price data
     }
+    threshold = 60  # Updated Buy/Sell threshold to match new data
     df = pd.DataFrame(data)
-    st.line_chart(df.set_index("Time (minutes)"))
+    chart = alt.Chart(df).mark_line().encode(
+        x=alt.X('Time (hours)', title='Time (hours)'),
+        y=alt.Y('Price (CAD/mAh)', title='Price (CAD/mAh)'),
+    ).properties(
+        title='Energy Price Forecast'
+    )
+
+    # Adding a horizontal line for the buy/sell threshold
+    threshold_line = alt.Chart(pd.DataFrame({'y': [threshold]})).mark_rule(color='red').encode(y='y')
+
+    # Combine the line chart with the threshold line
+    final_chart = chart + threshold_line
+    st.altair_chart(final_chart, use_container_width=True)
 
 # Streamlit Dashboard
 st.title("Energy Market Dashboard")
@@ -49,4 +65,4 @@ st.dataframe(open_calls[['Price', 'Quantity', 'Actor', 'Buying']])
 
 # Display Line Chart
 st.write("mAh vs. Time Chart")
-generate_line_chart()
+generate_energy_price_forecast_chart()
