@@ -6,7 +6,8 @@ import altair as alt
 st.set_page_config(page_title="State of Charge", page_icon="📊")
 st.title('State of Charge')
 
-csv_file_path = "./mock_data/mock_soc.csv" 
+user = st.session_state.get('User')
+csv_file_path = f'./mock_data/{user}.csv' 
 
 df = pd.read_csv(csv_file_path)
 df['time'] = pd.to_datetime(df['time'])

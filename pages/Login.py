@@ -35,8 +35,13 @@ def login_user(username: str, password: str):
 
 
 def logout_user():
-    cookie_manager.delete(config['cookie']['name'])
+    try:
+        cookie_manager.delete(config['cookie']['name'])
+    except KeyError as e:
+        st.warning(f"Attempted to delete a non-existing cookie: {e}")
     st.session_state['authenticated'] = False
+    st.write("You have been logged out.")
+    st.experimental_rerun()
 
 
 st.title('Login Page')
@@ -52,8 +57,9 @@ else:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button('Login'):
-        if login_user(username, password):  # Here, we pass the plaintext password.
+        if login_user(username, password):
             st.success('Login successful.')
+            st.session_state['User'] = username
             st.experimental_rerun()
         else:
             st.error('Login failed.')
