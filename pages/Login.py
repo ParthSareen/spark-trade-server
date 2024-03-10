@@ -49,7 +49,7 @@ if 'authenticated' not in st.session_state:
     authenticate_via_cookie()
 
 if st.session_state.get('authenticated', False):
-    st.success("You're already logged in.")
+    st.success("Logged in.")
     if st.button('Logout'):
         logout_user()
         st.experimental_rerun()
