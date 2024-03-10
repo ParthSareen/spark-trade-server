@@ -6,3 +6,7 @@ streamlit-authenticator
 PyYAML 
 bcrypt
 jwt
+Flask
+Flask-RESTful
+csv
+os

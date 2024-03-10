@@ -3,11 +3,15 @@ import pandas as pd
 import altair as alt
 
 
+if not st.session_state['authenticated']:
+    st.write("You must be logged in to view this page")
+    exit()
+
 st.set_page_config(page_title="State of Charge", page_icon="📊")
 st.title('State of Charge')
 
-user = st.session_state.get('User')
-csv_file_path = f'./mock_data/{user}.csv' 
+user = st.session_state.get('user')
+csv_file_path = f'./mock_data/{user}_soc.csv' 
 
 df = pd.read_csv(csv_file_path)
 df['time'] = pd.to_datetime(df['time'])

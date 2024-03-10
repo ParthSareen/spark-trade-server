@@ -59,7 +59,7 @@ else:
     if st.button('Login'):
         if login_user(username, password):
             st.success('Login successful.')
-            st.session_state['User'] = username
+            st.session_state['user'] = username
             st.experimental_rerun()
         else:
             st.error('Login failed.')
