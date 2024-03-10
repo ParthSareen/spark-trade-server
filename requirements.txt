@@ -1,0 +1,8 @@
+streamlit
+pandas
+numpy
+extra-streamlit-components
+streamlit-authenticator
+PyYAML 
+bcrypt
+jwt
