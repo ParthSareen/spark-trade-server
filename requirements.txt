@@ -10,3 +10,8 @@ Flask
 Flask-RESTful
 csv
 os
+icecream
+json
+requests
+time
+streamlit-autorefresh
