@@ -30,6 +30,6 @@ chart = (
 
 st.altair_chart(chart, use_container_width=True)
 
-
+# we need to now poll for the data using the api
 st.write("raw CSV data:")
 st.dataframe(df) 
