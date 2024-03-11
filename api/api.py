@@ -20,7 +20,6 @@ command_obj = {
 }
 
 app = Flask(__name__)
-SECRET_API_KEY = "secret"
 DIR = os.path.join(os.path.dirname(__file__), '../mock_data')
 
 
@@ -133,7 +132,6 @@ def get_diff():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
     return jsonify({"new_rows": new_rows}), 200
 
 

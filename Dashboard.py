@@ -3,9 +3,10 @@ import pandas as pd
 from market_operations.market import EnergyMarket, Bid
 from icecream import ic
 import altair as alt
+import os
 # st.session_state['authenticated'] = False
 # st.session_state['user'] = ''
-st.session_state['flask_url'] = 'http://127.0.0.1:5000'
+st.session_state['flask_url'] = 'http://127.0.0.1:8001'
 # st.session_state['last_row'] = -1
 # st.session_state['df'] = None
 
@@ -88,11 +89,10 @@ if os.path.exists("matched_bids.csv"):
         st.altair_chart(scatter_chart, use_container_width=True)
 
 # Display Open Calls
-if st.button('Refresh Open Calls'):
-    open_calls = get_open_calls(market)
-    st.write("Open Calls:")
-    st.dataframe(open_calls[['Price (CAD)', 'Quantity (mAh)', 'Bidder Name', 'Buying']])
-    plot_open_calls(open_calls)
+open_calls = get_open_calls(market)
+st.write("Open Calls:")
+st.dataframe(open_calls[['Price (CAD)', 'Quantity (mAh)', 'Bidder Name', 'Buying']])
+plot_open_calls(open_calls)
 # Display Line Chart
 st.write("mAh vs. Time Chart")
 generate_energy_price_forecast_chart()

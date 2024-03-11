@@ -193,6 +193,7 @@ class EnergyMarket:
             else:
                 self.remove_bid(highest_bid)
                 self.remove_bid(input_bid)
+            self.save_bids_to_csv()
             # Save matched bid data to CSV
             file_path = 'matched_bids.csv'
             # Check if file exists, if not, create it and write headers
