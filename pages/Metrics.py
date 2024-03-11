@@ -15,7 +15,7 @@ if 'df' not in st.session_state:
 st.set_page_config(page_title="Energy Metrics ⚡", page_icon="📊")
 st.title('Energy Metrics ⚡')
 
-user = st.session_state.get('user', 'default_user')
+user = st.session_state.get('user', 'jsmith')
 
 if 'last_row_index' not in st.session_state:
     st.session_state['last_row_index'] = -1
