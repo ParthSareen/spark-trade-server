@@ -1,5 +1,5 @@
 hash,price,quantity,actor_name,actor_type,actor_capacity,x,y,buying
-Buyer1_15_True,15.0,50,Buyer1,consumer,100.0,1,1,True
-Buyer2_20_True,20.0,75,Buyer2,consumer,150.0,1,2,True
-Buyer3_25_True,25.0,100,Buyer3,consumer,200.0,4,3,True
-Seller1_100.0_False,100.0,10,Seller1,producer,10.0,0,0,False
+Buyer1_15_True,15.0,500,Buyer1,consumer,1000.0,1,1,True
+Buyer2_20_True,20.0,550,Buyer2,consumer,1500.0,1,2,True
+Buyer3_25_True,25.0,1000,Buyer3,consumer,2000.0,4,3,True
+jsmith_5_False,5.0,200,jsmith,producer,10000.0,0,0,False
