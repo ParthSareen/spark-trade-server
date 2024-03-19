@@ -4,11 +4,8 @@ from market_operations.market import EnergyMarket, Bid
 from icecream import ic
 import altair as alt
 import os
-# st.session_state['authenticated'] = False
-# st.session_state['user'] = ''
+
 st.session_state['flask_url'] = 'http://127.0.0.1:8001'
-# st.session_state['last_row'] = -1
-# st.session_state['df'] = None
 
 # Initialize the EnergyMarket
 market = EnergyMarket()
