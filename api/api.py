@@ -165,7 +165,7 @@ def upload_csv():
 
 
 
-@app.route('/download-csv/<path:filename>', methods=['GET'])
+@app.route('/download-csv/<filename>', methods=['GET'])
 def download_csv(filename):
     ic(filename)
     file_path = os.path.join('test_data', filename)
