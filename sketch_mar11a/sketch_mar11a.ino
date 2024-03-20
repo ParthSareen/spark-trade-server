@@ -2,8 +2,8 @@
 #include <ESP8266HTTPClient.h>
 void setup() {
   // put your setup code here, to run once:
-  char ssid[] = "Datacity 661";
-  char pass[] = "12345678";
+  char ssid[] = "Parth";
+  char pass[] = "cappingstone";
 //  char* addr = "192.168.0.100 ";
 //  uint16_t port  = 10101;
   Serial.begin(115200);
@@ -30,6 +30,7 @@ void setup() {
     // Your URL for the GET request
     http.begin("http://54.202.120.41:8001/get-command-arduino");
     http.addHeader("Content-Type", "application/json");
+    http.addHeader("x-api-key", "secret");
     int httpCode = http.GET();
     
     if (httpCode > 0) { //Check for the returning code

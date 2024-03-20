@@ -3,6 +3,9 @@ from flask import Flask, request, jsonify, abort
 import csv
 import datetime
 import os
+import pandas as pd
+from flask import send_from_directory
+from icecream import ic
 
 
 arduino_resp_obj = {
@@ -20,6 +23,7 @@ command_obj = {
 }
 
 app = Flask(__name__)
+SECRET_API_KEY = "secret"
 DIR = os.path.join(os.path.dirname(__file__), '../mock_data')
 
 
@@ -133,6 +137,46 @@ def get_diff():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     return jsonify({"new_rows": new_rows}), 200
+
+
+@app.route('/upload-csv', methods=['POST'])
+def upload_csv():
+    # Check if the post request has the file part
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    ic(request.files)
+    file = request.files['file']
+    
+    # If the user does not select a file, the browser submits an
+    # empty file without a filename.
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    
+    if file and file.filename.endswith('.csv'):
+        filename = file.filename
+        # Make sure the UPLOAD_FOLDER exists, if not create it
+        if not os.path.exists('test_data/'):
+            os.makedirs('test_data/')
+        file.save(os.path.join('test_data/', filename))
+        return jsonify({"message": "File successfully uploaded"}), 200
+    else:
+        return jsonify({"error": "Allowed file type is CSV"}), 400
+
+
+
+@app.route('/download-csv/<filename>', methods=['GET'])
+def download_csv(filename):
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    file_path = os.path.join(parent_dir, 'test_data', filename)
+    if os.path.exists(file_path):
+        print('file exists')
+        return send_from_directory(os.path.join(parent_dir, 'test_data'), filename, as_attachment=True)
+    else:
+        print('file does not exist')
+        return jsonify({"error": "File does not exist"}), 404
+
+
 
 
 if __name__ == '__main__':
