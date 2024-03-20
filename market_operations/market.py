@@ -95,6 +95,7 @@ class EnergyMarket:
     
     # TODO: Move to API
     def load_bids_from_csv(self, filename: str = "bids.csv") -> None:
+        self.download_csv_from_server('http://127.0.0.1:8001/download-csv/{}'.format(filename), filename)
         try:
             with open(filename, mode='r') as file:
                 reader = csv.DictReader(file)
@@ -107,6 +108,7 @@ class EnergyMarket:
             print(f"File {filename} not found. Initializing an empty bids dictionary.")
 
     def load_grid_from_csv(self, filename: str = "market_grid.csv") -> None:
+        self.download_csv_from_server('http://127.0.0.1:8001/download-csv/{}'.format(filename), filename)
         try:
             df = pd.read_csv(filename, index_col=0, dtype=str)
             self.grid = df.values.tolist()
