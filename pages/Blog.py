@@ -7,13 +7,18 @@ st.markdown("""
     #### March 18th, 2024
     
     ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
-
+    Working on finishing the CAD
+    The CAD will be updated along with the electrical improvements and the final enclosure will be fabricated on CNC.
+            """)
+st.image("./blog_images/week 10.png")
+st.markdown("""
     ### Electrical Updates:
     Detail on subtopic 1.
 
     ### Software Updates:
-    Detail on subtopic 2.
+    The AI model has now been successfully trained and has yielded solid results. This model will be run on the cloud, on our EC2 instance to have minimal strain on the users
+    devices, and on the limited hardware in the smart meter. Integration work will be our primairy focus from here on out, as all of the individual components are now complete.
+    Currently, we have several mock interfaces up and running to visualize the website, and as we continue our integration work, each mock component will be replaced with the actual data.
     
     """, unsafe_allow_html=True)
 
@@ -22,13 +27,18 @@ st.markdown("""
     #### March 11th, 2024
     
     ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
-
+    3D printed the second prototype
+""")
+st.image("./blog_images/week 9.png")
+st.image("./blog_images/week 9 again.png")
+st.markdown("""        
     ### Electrical Updates:
     Detail on subtopic 1.
 
     ### Software Updates:
-    Created a buyer interface
+    We have completed the buyer interface, which now completes the loop and lets users both place buy and sell bids. These bids are automatically matched through our algorithm,
+    and the buyer is notified once they have successfuly purchased energy. We have also started work on the AI model, as it is currently being trained on the open data provided
+    by the government of Ontario. Our hopes are that once it is successfuly trained, it would be able to forecast the price of energy directly, and display that to the user.
     
     """, unsafe_allow_html=True)
 
@@ -36,14 +46,13 @@ st.markdown("""
     # Blog Post 8
     #### March 4th, 2024
     
-    ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
-
     ### Electrical Updates:
     Detail on subtopic 1.
 
     ### Software Updates:
-    Created a seller interface
+    Now we have created a direct way for the users to interface with the market, allowing users to set up selling bids, which is then fed back into the market grid and is
+    able to be matched accordingly. Sellers are able to submit their bids for matching, which then attempts to match them with a buy bid currently present on the market.
+    If this fails, the sellers bid still remains on the market until it finds a buyer.
     
     """, unsafe_allow_html=True)
 
@@ -52,13 +61,16 @@ st.markdown("""
     #### February 26th, 2024
     
     ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
-
+    Pieces to build up the diorama were ordered. These included items such as houses, roads, traffic signs, and grass.
+""")
+st.image("./blog_images/week 7.png")
+st.markdown("""
     ### Electrical Updates:
     Detail on subtopic 1.
 
     ### Software Updates:
-    We've now setup a mock trading interface, and we're able to simulate real time trades between multiple users an
+    We've now setup a mock trading interface, and we're able to simulate real time trades between multiple users, with both buyers and sellers present. The market grid has 
+    bids for both buying and selling, and they all interact as expected.
     
     """, unsafe_allow_html=True)
 
@@ -66,15 +78,11 @@ st.markdown("""
     # Blog Post 6
     #### February 19th, 2024
     
-    ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
-
     ### Electrical Updates:
     Detail on subtopic 1.
 
     ### Software Updates:
-    On our platform, we've rolled out a feature that allows users to create and submit bids directly to the energy market. This new functioniality streamlines the process of
-    energy trading, making it more accessible and user-friendly.
+    On our platform, we've rolled out a feature that allows users to create and submit bids directly to the energy market.
 
     With this update, participants can now easily offer or request energy through our platform. The system is designed around two main components: Actors and Bids. Actors represent
     users within the system, each with their unique attributes, such as type (producer or consumer) and capacity. Bids, on the other hand, detail the offer or request, specifying the
@@ -89,9 +97,6 @@ st.markdown("""
     # Blog Post 5
     #### February 12th, 2024
     
-    ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
-
     ### Electrical Updates:
     Detail on subtopic 1.
 
@@ -109,8 +114,11 @@ st.markdown("""
     #### February 5th, 2024
     
     ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
-
+    Printed various options to decide the desired casing 
+""")
+st.image("./blog_images/week 4.png")
+st.image("./blog_images/week 4 again.png")
+st.markdown("""
     ### Electrical Updates:
     Detail on subtopic 1.
 
@@ -134,9 +142,6 @@ st.markdown("""
     # Blog Post 3
     #### January 29th, 2024
     
-    ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
-
     ### Electrical Updates:
     Detail on subtopic 1.
 
@@ -155,9 +160,6 @@ st.markdown("""
 st.markdown("""
     # Blog Post 2
     #### January 22nd, 2024
-    
-    ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
 
     ### Electrical Updates:
     Detail on subtopic 1.
@@ -177,8 +179,22 @@ st.markdown("""
     Back from winter break!
     
     ### Mechanical Updates:
-    Here, you dive deep into the main content of your blog post. You can split this section into multiple subsections, each focusing on a particular aspect of your topic.
+""")
+st.image("./blog_images/week 1.png")
+st.markdown("""
+    Finalized the requirements of the symposium day:
 
+    * 1 Main House (With the smart meter)
+        * Smart Meter
+        * Consumer (Motor + LED)
+        * Producer (Battery Bank with a fake solar panel)
+        * Battery storage (also a battery bank)
+    * 1st Secondary House
+        * Producer (Another battery bank)
+        * Consumer (LED + Motor)
+    * 2nd Secondary House
+        * Consumer (LED + Motor)
+            
     ### Electrical Updates:
     Detail on subtopic 1.
 
