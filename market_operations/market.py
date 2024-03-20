@@ -1,4 +1,6 @@
 from __future__ import annotations
+import requests
+import json
 from dataclasses import dataclass
 from collections import deque
 import datetime
@@ -36,21 +38,62 @@ class EnergyMarket:
         self.grid_df = None
         self.load_grid_from_csv()
         self.load_bids_from_csv()
+        ic('init', self.grid)
     
-    # def __del__(self):
-    #     # Save the grid to a CSV file
-    #     self.save_grid_to_csv()
-    #     # Save the bids to a CSV file
-    #     self.save_bids_to_csv()
-    #     print("EnergyMarket object is being destroyed, saving grid and bids to CSV.")
+
+    def send_csv_to_endpoint(self, filename: str) -> None:
+        with open(filename, 'rb') as file:
+        # Define the file payload to be sent in the POST request
+            files = {'file': (filename, file)}
+            ic(files)
+            # Make the POST request to upload the CSV file
+            response = requests.post('http://127.0.0.1:8001/upload-csv', files=files)
+            
+        ic(response.text)
+        return response
+    
+    def download_csv_from_server(self, url, save_path):
+        """
+        Downloads a CSV file from a specified URL and saves it to a given path.
+        
+        Args:
+        - url (str): The URL of the API endpoint providing the file download.
+        - save_path (str): The file system path where the downloaded file should be saved.
+        
+        Returns:
+        - None
+        """
+        # Make the GET request to download the file
+        response = requests.get(url, stream=False)
+        
+        if response.status_code == 200:
+            with open(save_path, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=128):
+                    file.write(chunk)
+            print("File successfully downloaded and saved to", save_path)
+        else:
+            print("Failed to download the file. Status code:", response.status_code)
+            print("Response:", response.text)  # Add this line to see the server's response message
+
 
     def save_bids_to_csv(self, filename: str = "bids.csv") -> None:
+        # with open(filename, 'rb') as file:
+        # # Define the file payload to be sent in the POST request
+        #     files = {'file': (filename, file)}
+        #     ic(files)
+        #     # Make the POST request to upload the CSV file
+        #     response = requests.post('http://127.0.0.1:8001/upload-csv', files=files)
+            
+        # ic(response.text)
+        # return response
         with open(filename, mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['hash', 'price', 'quantity', 'actor_name', 'actor_type', 'actor_capacity', 'x', 'y', 'buying'])
             for hash, bid in self.bids.items():
                 writer.writerow([hash, bid.price, bid.quantity, bid.actor.name, bid.actor.actor_type, bid.actor.capcity, bid.actor.x, bid.actor.y, bid.buying])
+        self.send_csv_to_endpoint(filename)
     
+    # TODO: Move to API
     def load_bids_from_csv(self, filename: str = "bids.csv") -> None:
         try:
             with open(filename, mode='r') as file:
@@ -74,11 +117,10 @@ class EnergyMarket:
             print(f"File {filename} not found. Initializing an empty grid.")
             self.grid = [[0 for _ in range(5)] for _ in range(5)]
        
-        
     def save_grid_to_csv(self, filename: str = "market_grid.csv") -> None:
         self.grid_df = pd.DataFrame(self.grid)
         self.grid_df.to_csv(filename)
-        
+        self.send_csv_to_endpoint(filename)
 
 
     def add_bid(self, bid: Bid) -> None:
@@ -97,6 +139,11 @@ class EnergyMarket:
         else:
             raise ValueError("Bid already exists")
 
+    def hash_to_bid(self, hash: str) -> Bid:
+        try:
+            return self.bids[hash]
+        except KeyError:
+            raise ValueError("Bid does not exist")
         
     def remove_bid(self, bid: Bid) -> None:
         self.load_grid_from_csv()
@@ -225,17 +272,22 @@ class EnergyMarket:
 
 
 def main():
-    import setup_market
-    setup_market.setup_energy_market_with_buyers()
-    actor2 = Actor("actor2", "consumer", 100, 4, 4)
-    bid2 = Bid(20, 10, actor2, False)
+    # import setup_market
+    # setup_market.setup_energy_market_with_buyers()
+    # actor2 = Actor("actor2", "consumer", 100, 4, 4)
+    # bid2 = Bid(20, 10, actor2, False)
+    # market = EnergyMarket()
+    # market.add_bid(bid2)
+    # # market.match_single_bid(bid1)
+    # buying_bids = market.find_all_bids(bid2)
+    # sell_price, sell_amt, matched_bid = market.match_bid(bid2, buying_bids)
+    # ic(bid2)
+    # ic(sell_price, sell_amt, matched_bid)
+
     market = EnergyMarket()
-    market.add_bid(bid2)
-    # market.match_single_bid(bid1)
-    buying_bids = market.find_all_bids(bid2)
-    sell_price, sell_amt, matched_bid = market.match_bid(bid2, buying_bids)
-    ic(bid2)
-    ic(sell_price, sell_amt, matched_bid)
+    # market.save_grid_to_csv()
+    # market.save_bids_to_csv()
+    market.download_csv_from_server('http://127.0.0.1:8001/download-csv/market_grid.csv', 'market_grid2.csv')
 
 
 if __name__ == "__main__":

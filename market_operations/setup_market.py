@@ -1,6 +1,8 @@
-from market_operations.market import Actor, Bid, EnergyMarket
+# from market_operations.market import Actor, Bid, EnergyMarket
+from market import Actor, Bid, EnergyMarket
 import csv
 import pandas as pd
+import requests
 
 # Setup the energy market with 3 buyers
 def setup_energy_market_with_buyers():
@@ -13,8 +15,14 @@ def setup_energy_market_with_buyers():
 
     df = pd.DataFrame('0', index=range(5), columns=range(5))
     df.to_csv("market_grid.csv")
+    empty_df = pd.DataFrame(columns=["hash", "price", "quantity", "actor_name", "actor_type", "actor_capacity", "x", "y", "buying"])
+    empty_df.to_csv("bids.csv")
+
+    # requests.get('http://127.0.0.1:8001/setup')
 
     energy_market = EnergyMarket()
+    energy_market.save_grid_to_csv()
+    energy_market.save_bids_to_csv()
     # Define buyers
     buyer1 = Actor("Buyer1", "consumer", 1000, 1, 1)
     buyer2 = Actor("Buyer2", "consumer", 1500, 1, 2)
@@ -41,4 +49,5 @@ def setup_energy_market_with_buyers():
     energy_market.add_bid(bid_buyer1)
     energy_market.add_bid(bid_buyer2)
     energy_market.add_bid(bid_buyer3)
+
 setup_energy_market_with_buyers()
