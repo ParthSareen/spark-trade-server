@@ -167,13 +167,11 @@ def upload_csv():
 
 @app.route('/download-csv/<filename>', methods=['GET'])
 def download_csv(filename):
-    ic(filename)
-    file_path = os.path.join('test_data', filename)
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    file_path = os.path.join(parent_dir, 'test_data', filename)
     if os.path.exists(file_path):
         print('file exists')
-        data = send_from_directory('test_data', 'test_data/market_grid.csv', as_attachment=True)  # Change to True if you want the file to be downloaded
-        ic('data', data)
-        return data
+        return send_from_directory(os.path.join(parent_dir, 'test_data'), filename, as_attachment=True)
     else:
         print('file does not exist')
         return jsonify({"error": "File does not exist"}), 404
