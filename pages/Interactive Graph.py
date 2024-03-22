@@ -1,5 +1,3 @@
-import streamlit as st
-import altair as alt
 import pandas as pd
 import numpy as np
 from icecream import ic
@@ -51,6 +49,7 @@ labels = []
 degrees = []
 
 # Iterate through the DataFrame to extract 'label' and 'degree'
+print(em.bids)
 for _, row in market_grid_df.iterrows():
     for cell in row[1:]:  # Skip the index column
         if cell != '0':  # Check if the cell is not '0'
@@ -70,8 +69,8 @@ for _, row in market_grid_df.iterrows():
 transformed_df = pd.DataFrame({'label': labels, 'degree': degrees})
 
 # Display the transformed DataFrame
-print("Transformed DataFrame:")
-print(transformed_df)
+# print("Transformed DataFrame:")
+# print(transformed_df)
 
 d3.graph(adjacency_matrix)
 # Set node size to 0 for nodes with 'degree' value 0

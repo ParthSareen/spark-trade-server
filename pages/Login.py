@@ -3,10 +3,10 @@ import yaml
 from datetime import timedelta
 import extra_streamlit_components as stx
 
-from login.login_utils import check_password, hash_password, token_decode, token_encode
+from login.login_utils import check_password, token_decode, token_encode
 
 
-config = yaml.safe_load(open('./mock_data/mock_users.yaml'))
+config = yaml.safe_load(open('./data/mock_users.yaml'))
 cookie_manager = stx.CookieManager()
 
 

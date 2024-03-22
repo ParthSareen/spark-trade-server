@@ -24,7 +24,7 @@ command_obj = {
 
 app = Flask(__name__)
 SECRET_API_KEY = "secret"
-DIR = os.path.join(os.path.dirname(__file__), '../mock_data')
+DIR = os.path.join(os.path.dirname(__file__), '../data')
 
 
 def get_command_file_path(user):
@@ -145,7 +145,6 @@ def upload_csv():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
     
-    ic(request.files)
     file = request.files['file']
     
     # If the user does not select a file, the browser submits an
@@ -170,10 +169,8 @@ def download_csv(filename):
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     file_path = os.path.join(parent_dir, 'test_data', filename)
     if os.path.exists(file_path):
-        print('file exists')
         return send_from_directory(os.path.join(parent_dir, 'test_data'), filename, as_attachment=True)
     else:
-        print('file does not exist')
         return jsonify({"error": "File does not exist"}), 404
 
 
