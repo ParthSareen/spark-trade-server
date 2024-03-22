@@ -1,9 +1,7 @@
 import streamlit as st
-import altair as alt
 from market_operations import *
-import pandas as pd
-from icecream import ic
 from market_operations.setup_market import setup_energy_market_with_buyers
+import icecream as ic
 
 st.set_page_config(page_title="Energy Market", page_icon="📊")
 st.title('Energy Market')
@@ -11,10 +9,14 @@ st.title('Energy Market')
 from market_operations.market import Actor, Bid, EnergyMarket
 
 
+if not st.session_state.get('authenticated', False):
+    st.write("You must be logged in to view this page")
+    st.stop()
+
+
 def toggle_grid_view():
     energy_market = EnergyMarket()
 
-    # grid_df = pd.DataFrame(energy_market.grid)
     def prettify_grid_value(value):
         if isinstance(value, str) and "_" in value:
             quantity = energy_market.bids[value].quantity
@@ -26,13 +28,15 @@ def toggle_grid_view():
         return value
 
     grid_df = energy_market.grid_df.applymap(prettify_grid_value)
-    print(grid_df)
-    st.dataframe(grid_df.style.applymap(lambda x: 'background-color: green' if 'sells' in x else ('background-color: orange' if 'buys' in x else ''), subset=grid_df.columns))
+    with st.container():
+        styled_df = grid_df.style.applymap(lambda x: 'background-color: green' if 'sells' in x else ('background-color: orange' if 'buys' in x else ''), subset=grid_df.columns)
+        st.dataframe(styled_df, use_container_width=True)
 
 grid_view_expander = st.expander("Grid View", expanded=True)
 with grid_view_expander:
+    toggle_grid_view()
     if st.button("Refresh Grid View"):
-        toggle_grid_view()
+        pass
 
 def remove_bid(bid: Bid):
     energy_market = EnergyMarket()
@@ -45,11 +49,11 @@ with create_sell_bid_expander:
     energy_market: EnergyMarket = EnergyMarket()
     with st.form("sell_bid_form"):
         st.write("Enter your sell bid details:")
-        # TODO: replace with user name @Fares
-        seller_name = "jsmith"
-        # seller_capacity = st.number_input("Capacity", min_value=0.0, format="%.2f", key="seller_capacity_form")
-        seller_capacity = 10000
-        seller_x, seller_y = 0, 0
+
+        seller_name = st.session_state['user']
+        # TODO: Pull this data from arduino
+        seller_capacity, seller_x, seller_y = 1000, 3, 1
+
         sell_price = st.number_input("Price (CAD)", min_value=5.0, format="%.2f", key="sell_price_form")
         sell_quantity = st.number_input("Quantity (mAh)", min_value=200, key="sell_quantity_form")
         submit_button = st.form_submit_button("Submit Sell Bid")
@@ -70,22 +74,26 @@ with create_sell_bid_expander:
             st.error(f"Failed to add sell bid: {e}")
 
 
-if st.button('Remove Old Bids'):
-    energy_market.remove_old_calls(seller_name='jsmith')
+# col1, col2, col3 = st.columns(3)
 
+# with col1:
+if st.button('Remove Old Bids'):
+    energy_market.remove_old_calls(name=seller_name)
+
+# with col2:
 if st.button('Submit for Matching'):
-    sell_bid = energy_market.bids[energy_market.grid[0][0]]
+    sell_bid = energy_market.bids[energy_market.grid[seller_x][seller_y]]
     if sell_bid is None:
         st.error("Please submit a sell bid first")
         st.stop()
     buying_bids = energy_market.find_all_bids(sell_bid)
-    ic(buying_bids)
     matched = energy_market.match_bid(sell_bid, buying_bids)
     if matched:
         st.success("Matching completed successfully!")
-        st.write(matched)
+        # st.write(matched)
     else:
         st.write("No matching bids found")
 
+# with col3:
 if st.button('Reset Market Ops'):
     setup_energy_market_with_buyers()

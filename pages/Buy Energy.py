@@ -1,14 +1,15 @@
 import streamlit as st
-import altair as alt
 from market_operations import *
-import pandas as pd
-from icecream import ic
-from market_operations.setup_market import setup_energy_market_with_buyers
 
 st.set_page_config(page_title="Energy Market", page_icon="📊")
 st.title('Energy Market')
 
 from market_operations.market import Actor, Bid, EnergyMarket
+
+
+if not st.session_state.get('authenticated', False):
+    st.write("You must be logged in to view this page")
+    st.stop()
 
 if 'refresh_grid' not in st.session_state:
     st.session_state.refresh_grid = True
@@ -22,7 +23,6 @@ def remove_bid(bid: Bid):
 def toggle_grid_view():
     energy_market = EnergyMarket()
 
-    # grid_df = pd.DataFrame(energy_market.grid)
     def prettify_grid_value(value):
         if isinstance(value, str) and "_" in value:
             quantity = energy_market.bids[value].quantity
@@ -34,14 +34,19 @@ def toggle_grid_view():
         return value
 
     grid_df = energy_market.grid_df.applymap(prettify_grid_value)
-    # print(grid_df)
-    st.dataframe(grid_df.style.applymap(lambda x: 'background-color: green' if 'sells' in x else ('background-color: orange' if 'buys' in x else ''), subset=grid_df.columns))
+    
+    with st.container():
+        styled_df = grid_df.style.applymap(lambda x: 'background-color: green' if 'sells' in x else ('background-color: orange' if 'buys' in x else ''), subset=grid_df.columns)
+        st.dataframe(styled_df, use_container_width=True)
+
 
 grid_view_expander = st.expander("Grid View", expanded=True)
 with grid_view_expander:
     toggle_grid_view()
     if st.button("Refresh Grid View"):
         pass
+
+buyer_name = st.session_state['user']
 
 create_buy_bid_expander = st.expander("Create Buy Bid")
 with create_buy_bid_expander:
@@ -50,8 +55,8 @@ with create_buy_bid_expander:
     with st.form("buy_bid_form"):
         st.write("Enter your buy bid details:")
 
-        # TODO: pull this data and make it not hard coded
-        buyer_name, buyer_capacity, buyer_x, buyer_y = "Fares", 1000, 3, 1
+        # TODO: pull this data from arduino
+        buyer_capacity, buyer_x, buyer_y = 1000, 3, 1
 
         buy_price = st.number_input("Price (CAD)", min_value=5.0, format="%.2f", key="buy_price_form")
         buy_quantity = st.number_input("Quantity (mAh)", min_value=200, key="buy_quantity_form")
@@ -73,7 +78,4 @@ with create_buy_bid_expander:
             st.error(f"Failed to add buy bid: {e}")
 
 if st.button('Remove Old Bids'):
-    energy_market.remove_old_calls(buyer_name='Fares')
-
-# if st.button('Reset Market Ops'):
-#     setup_energy_market_with_buyers()
+    energy_market.remove_old_calls(name=buyer_name)

@@ -1,8 +1,6 @@
 from __future__ import annotations
 import requests
-import json
 from dataclasses import dataclass
-from collections import deque
 import datetime
 import os
 import pandas as pd
@@ -38,31 +36,22 @@ class EnergyMarket:
         self.grid_df = None
         self.load_grid_from_csv()
         self.load_bids_from_csv()
-        ic('init', self.grid)
+        # ic('init', self.grid)
     
 
     def send_csv_to_endpoint(self, filename: str) -> None:
         with open(filename, 'rb') as file:
         # Define the file payload to be sent in the POST request
             files = {'file': (filename, file)}
-            ic(files)
+            # ic(files)
             # Make the POST request to upload the CSV file
             response = requests.post('http://127.0.0.1:8001/upload-csv', files=files)
             
-        ic(response.text)
+        # ic(response.text)
         return response
     
+
     def download_csv_from_server(self, url, save_path):
-        """
-        Downloads a CSV file from a specified URL and saves it to a given path.
-        
-        Args:
-        - url (str): The URL of the API endpoint providing the file download.
-        - save_path (str): The file system path where the downloaded file should be saved.
-        
-        Returns:
-        - None
-        """
         # Make the GET request to download the file
         response = requests.get(url, stream=False)
         
@@ -70,22 +59,13 @@ class EnergyMarket:
             with open(save_path, 'wb') as file:
                 for chunk in response.iter_content(chunk_size=128):
                     file.write(chunk)
-            print("File successfully downloaded and saved to", save_path)
+            # print("File successfully downloaded and saved to", save_path)
         else:
-            print("Failed to download the file. Status code:", response.status_code)
-            print("Response:", response.text)  # Add this line to see the server's response message
+            # print("Failed to download the file. Status code:", response.status_code)
+            print("Response:", response.text)
 
 
     def save_bids_to_csv(self, filename: str = "bids.csv") -> None:
-        # with open(filename, 'rb') as file:
-        # # Define the file payload to be sent in the POST request
-        #     files = {'file': (filename, file)}
-        #     ic(files)
-        #     # Make the POST request to upload the CSV file
-        #     response = requests.post('http://127.0.0.1:8001/upload-csv', files=files)
-            
-        # ic(response.text)
-        # return response
         with open(filename, mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['hash', 'price', 'quantity', 'actor_name', 'actor_type', 'actor_capacity', 'x', 'y', 'buying'])
@@ -93,7 +73,7 @@ class EnergyMarket:
                 writer.writerow([hash, bid.price, bid.quantity, bid.actor.name, bid.actor.actor_type, bid.actor.capcity, bid.actor.x, bid.actor.y, bid.buying])
         self.send_csv_to_endpoint(filename)
     
-    # TODO: Move to API
+
     def load_bids_from_csv(self, filename: str = "bids.csv") -> None:
         self.download_csv_from_server('http://127.0.0.1:8001/download-csv/{}'.format(filename), filename)
         try:
@@ -105,7 +85,9 @@ class EnergyMarket:
                     bid = Bid(price=float(row['price']), quantity=int(row['quantity']), actor=actor, buying=row['buying'] == 'True')
                     self.bids[row['hash']] = bid
         except FileNotFoundError:
-            print(f"File {filename} not found. Initializing an empty bids dictionary.")
+            pass
+            # print(f"File {filename} not found. Initializing an empty bids dictionary.")
+
 
     def load_grid_from_csv(self, filename: str = "market_grid.csv") -> None:
         self.download_csv_from_server('http://127.0.0.1:8001/download-csv/{}'.format(filename), filename)
@@ -113,12 +95,11 @@ class EnergyMarket:
             df = pd.read_csv(filename, index_col=0, dtype=str)
             self.grid = df.values.tolist()
             self.grid_df = df
-            # ic(self.grid)
-            # ic(self.grid_df)
         except FileNotFoundError:
             print(f"File {filename} not found. Initializing an empty grid.")
             self.grid = [[0 for _ in range(5)] for _ in range(5)]
        
+
     def save_grid_to_csv(self, filename: str = "market_grid.csv") -> None:
         self.grid_df = pd.DataFrame(self.grid)
         self.grid_df.to_csv(filename)
@@ -127,19 +108,20 @@ class EnergyMarket:
 
     def add_bid(self, bid: Bid) -> None:
         self.load_grid_from_csv()
-        ic('add bid', bid, self.grid)
-        self.remove_old_calls(seller_name=bid.actor.name)
+        # ic('add bid', bid, self.grid)
+        self.remove_old_calls(name=bid.actor.name)
         hash = bid.actor.name + "_" + str(int(bid.price)) + "_" + str(bid.buying)
         if hash not in self.bids:
             self.bids[hash] = bid
-            ic(bid.actor.x, bid.actor.y, hash)
+            # ic(bid.actor.x, bid.actor.y, hash)
             self.grid[bid.actor.x][bid.actor.y] = hash
             self.save_grid_to_csv()
             self.save_bids_to_csv()
-            ic('added', self.grid)
+            # ic('added', self.grid)
 
         else:
             raise ValueError("Bid already exists")
+
 
     def hash_to_bid(self, hash: str) -> Bid:
         try:
@@ -147,10 +129,11 @@ class EnergyMarket:
         except KeyError:
             raise ValueError("Bid does not exist")
         
+
     def remove_bid(self, bid: Bid) -> None:
         self.load_grid_from_csv()
         hash = bid.actor.name + "_" + str(int(bid.price)) + "_" + str(bid.buying)
-        ic('removing', bid)
+        # ic('removing', bid)
         if hash in self.bids:
             del self.bids[hash]
             self.grid[bid.actor.x][bid.actor.y] = '0' 
@@ -158,13 +141,13 @@ class EnergyMarket:
         else:
             raise ValueError("Bid does not exist")
 
+
     def print_grid(self) -> None:
         for row in self.grid:
             print(" ".join(str(cell) for cell in row)) 
         print('\n')
     
     
-
     def find_all_bids(self, input_bid: Bid) -> List[str]:
         self.load_grid_from_csv()
         def euclidean_distance(x1, y1, x2, y2):
@@ -175,14 +158,14 @@ class EnergyMarket:
                 if isinstance(cell, str) and cell.endswith('True'):
                     distance = euclidean_distance(input_bid.actor.x, input_bid.actor.y, x, y)
                     bids_ending_with_true.append((cell, distance))
-        ic(bids_ending_with_true)
+        # ic(bids_ending_with_true)
         return bids_ending_with_true
 
 
-    def remove_old_calls(self, bid:Bid|None=None, seller_name=None) -> None:
-        if not seller_name:
-            seller_name = bid.actor.name
-        bids_to_remove = [(bid_hash, bid_obj) for bid_hash, bid_obj in self.bids.items() if bid_obj.actor.name == seller_name]
+    def remove_old_calls(self, bid:Bid|None=None, name=None) -> None:
+        if not name:
+            name = bid.actor.name
+        bids_to_remove = [(bid_hash, bid_obj) for bid_hash, bid_obj in self.bids.items() if bid_obj.actor.name == name]
         for bid_hash, bid_obj in bids_to_remove:
             del self.bids[bid_hash]
             self.grid[bid_obj.actor.x][bid_obj.actor.y] = '0'
@@ -191,9 +174,6 @@ class EnergyMarket:
 
 
     def update_bid_in_grid_and_bids(self, bid: Bid, old_hash) -> None:
-        """
-        Updates the bid information in both the grid and the bids dictionary.
-        """
         # Generate the hash for the bid
         bid_hash = f"{bid.actor.name}_{int(bid.price)}_{bid.buying}"
         # Update the bid in the bids dictionary
@@ -203,7 +183,7 @@ class EnergyMarket:
         self.bids[bid_hash] = bid
         # Update the bid in the grid
         self.grid[bid.actor.x][bid.actor.y] = bid_hash
-        ic(self.grid[bid.actor.x][bid.actor.y])
+        # ic(self.grid[bid.actor.x][bid.actor.y])
         # Save the updated grid and bids to their respective CSV files
         self.save_grid_to_csv()
         self.save_bids_to_csv()
