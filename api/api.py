@@ -1,4 +1,5 @@
 import json
+import shutil
 from flask import Flask, request, jsonify, abort
 import csv
 import datetime
@@ -6,6 +7,7 @@ import os
 import pandas as pd
 from flask import send_from_directory
 from icecream import ic
+from datetime import datetime
 
 
 arduino_resp_obj = {
@@ -25,6 +27,7 @@ command_obj = {
 app = Flask(__name__)
 SECRET_API_KEY = "secret"
 DIR = os.path.join(os.path.dirname(__file__), '../data')
+
 
 
 def get_command_file_path(user):
@@ -47,7 +50,101 @@ def check_resp_object(expected_object, data):
             return jsonify({"error": f"Incorrect type for field: {field}, expected {expected_type_names}"})
     return None
 
+@app.route('/get-trade', methods=['GET'])
+def get_trade():
+    check_api_key()
+    
+    try:
+        with open('test_data/trades.csv', 'r') as file:
+            reader = csv.reader(file)
+            try:
+                header = next(reader)
+                data = next(reader)
+            except StopIteration:  # This means the file is empty
+                return jsonify({"conduct_trade": False}), 200
+    except FileNotFoundError:  # This means the file does not exist
+        return jsonify({"conduct_trade": False}), 200
+    return jsonify(dict(zip(header, data))), 200
 
+
+@app.route('/delete-test-data', methods=['DELETE'])
+def delete_test_data():
+    check_api_key()
+    try:
+        for filename in os.listdir('test_data'):
+            file_path = os.path.join('test_data', filename)
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        return jsonify({'message': 'Test data deleted successfully'}), 200
+    except FileNotFoundError:
+        return jsonify({'error': 'Test data does not exist'}), 404
+
+@app.route('/send-soc-data', methods=['POST'])
+def write_soc_data():
+    check_api_key()
+    
+    if not request.is_json:
+        return jsonify({"error": "Request is not JSON"}), 400
+    
+    data = request.get_json()
+    
+    required_fields = ['current', 'mAh', 'voltage']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"Missing field: {field}"}), 400
+    
+    try:
+        with open('data/jsmith_soc.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([data['current'], data['mAh'], data['voltage'], datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+        return jsonify({'message': 'SOC data written successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/check-trades', methods=['GET'])
+def check_trades():
+    check_api_key()
+    try:
+        with open('test_data/trades.csv', 'r') as file:
+            reader = csv.reader(file)
+            data = list(reader)
+            # If the file has more than just the header row, it's not empty
+            if len(data) > 1:
+                return jsonify({"trades_exist": True}), 200
+            else:
+                return jsonify({"trades_exist": False}), 200
+    except FileNotFoundError:
+        # If the file doesn't exist, we consider it as empty
+        return jsonify({"trades_exist": False}), 200
+
+
+
+@app.route('/save-trade', methods=['POST'])
+def save_trade():
+    check_api_key()
+    
+    if not request.is_json:
+        return jsonify({"error": "Request is not JSON"}), 400
+    
+    data = request.get_json()
+    
+    with open('test_data/trades.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['conduct_trade', 'mah_to_transmit', 'seller', 'consumer'])
+        writer.writerow([data['conduct_trade'], data['mah_to_transmit'], data['seller'], data['consumer']])
+    return jsonify({'message': 'Trade saved successfully'}), 200
+
+
+@app.route('/clear-trade', methods=['GET'])
+def clear_trades():
+    check_api_key()
+    # Clear the file test_data/trades.csv
+    open('test_data/trades.csv', 'w').close()
+    return jsonify({'message': 'Trades cleared successfully'}), 200
+    
 @app.route('/update-csv', methods=['POST'])
 def update_csv():
     check_api_key()
