@@ -7,6 +7,7 @@ import os
 import pandas as pd
 from flask import send_from_directory
 from icecream import ic
+from datetime import datetime
 
 
 arduino_resp_obj = {
@@ -49,19 +50,6 @@ def check_resp_object(expected_object, data):
             return jsonify({"error": f"Incorrect type for field: {field}, expected {expected_type_names}"})
     return None
 
-
-@app.route('/test/<int:number>', methods=['GET'])
-def test(number):
-    return jsonify({"number": number}), 200
-
-@app.route('/test_post', methods=['POST'])
-def test_post():
-    if not request.is_json:
-        return jsonify({"error": "Request is not JSON"}), 400
-    data = request.get_json()
-    print(data)
-    return jsonify({"message": "Data received", "yourData": data}), 200
-
 @app.route('/get-trade', methods=['GET'])
 def get_trade():
     check_api_key()
@@ -73,7 +61,7 @@ def get_trade():
                 header = next(reader)
                 data = next(reader)
             except StopIteration:  # This means the file is empty
-                return jsonify({"conduct_trade": True}), 200
+                return jsonify({"conduct_trade": False}), 200
     except FileNotFoundError:  # This means the file does not exist
         return jsonify({"conduct_trade": False}), 200
     return jsonify(dict(zip(header, data))), 200
@@ -93,7 +81,47 @@ def delete_test_data():
     except FileNotFoundError:
         return jsonify({'error': 'Test data does not exist'}), 404
 
-# TODO: make sure file is empty before - figure it out 
+@app.route('/send-soc-data', methods=['POST'])
+def write_soc_data():
+    check_api_key()
+    
+    if not request.is_json:
+        return jsonify({"error": "Request is not JSON"}), 400
+    
+    data = request.get_json()
+    
+    required_fields = ['current', 'mAh', 'voltage']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"Missing field: {field}"}), 400
+    
+    try:
+        with open('data/jsmith_soc.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([data['current'], data['mAh'], data['voltage'], datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+        return jsonify({'message': 'SOC data written successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/check-trades', methods=['GET'])
+def check_trades():
+    check_api_key()
+    try:
+        with open('test_data/trades.csv', 'r') as file:
+            reader = csv.reader(file)
+            data = list(reader)
+            # If the file has more than just the header row, it's not empty
+            if len(data) > 1:
+                return jsonify({"trades_exist": True}), 200
+            else:
+                return jsonify({"trades_exist": False}), 200
+    except FileNotFoundError:
+        # If the file doesn't exist, we consider it as empty
+        return jsonify({"trades_exist": False}), 200
+
+
+
 @app.route('/save-trade', methods=['POST'])
 def save_trade():
     check_api_key()

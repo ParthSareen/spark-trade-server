@@ -1,4 +1,4 @@
-#include <WiFi.h>
+ #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 
@@ -7,10 +7,10 @@
 
 const char* ssid = "Parth";
 const char* password = "cappingstone";
-const char* online = "http://54.202.120.41:8001"
-const char* local = "http://172.20.10.6:8001"
+const char* online = "http://54.202.120.41:8001";
+const char* local = "http://172.20.10.6:8001";
 
-String getWifiStatus(int status) {
+String get_wifi_status(int status) {
   switch (status) {
     case WL_IDLE_STATUS:
       return "WL_IDLE_STATUS";
@@ -45,12 +45,13 @@ String getTrade() {
       Serial.println(payload);
     }
     else {
-      Serial.println("Error on HTTP request");
+      Serial.println("Error on HTTP GET request");
     }
     http.end(); //Free the resources
   }
   return payload; // Return the payload
 }
+
 void clear_trade() {
 
   if (WiFi.status() == WL_CONNECTED) {
@@ -59,17 +60,86 @@ void clear_trade() {
     String url = String(local) + "/clear-trade";
     http.begin(url);
     http.addHeader("Content-Type", "application/json");
-    http.addHeader("x-api-key", "secret"); // Use your
+    http.addHeader("x-api-key", "secret"); // Use your actual API key
+    int httpCode = http.GET(); // Send the request
+    if (httpCode > 0) { // Check for the returning code
+      String payload = http.getString(); // Get the request response payload
+      Serial.print("HTTP Response code: ");
+      Serial.println(httpCode);
+      Serial.print("Response payload: ");
+      Serial.println(payload);
+    }
+    else {
+      Serial.print("Error on HTTP request, code: ");
+      Serial.println(httpCode);
+    }
+    http.end(); // Free the resources
+  }
 }
-void send_soc_data() {}
-void trade_relay1() {
+void send_soc_data(float current, float mAh, float voltage) {
+if (WiFi.status() == WL_CONNECTED) {
+
+  HTTPClient http;
+  Serial.println("Sending SOC data...");
+  String url = String(local) + "/send-soc-data";
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("x-api-key", "secret"); // Use your actual API key
+
+  // Assuming current, mAh, and voltage are float variables holding the SOC data
+  String payload = "{\"current\": " + String(current) + ", \"mAh\": " + String(mAh) + ", \"voltage\": " + String(voltage) + "}";
+  
+  int httpCode = http.POST(payload);
+  if (httpCode > 0) { //Check for the returning code
+    String response = http.getString();
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpCode);
+    Serial.print("Response payload: ");
+    Serial.println(response);
+  }
+  else {
+    Serial.print("Error on HTTP soc request, code: ");
+    Serial.println(httpCode);
+  }
+  http.end(); //Free the resources
+}
+else {
+  Serial.println("WiFi not connected");
+}
+}
+
+void create_delay2(int mah_to_trade) {
+  for (int i = 0; i < mah_to_trade ; i++) {
+    float current = random(19, 21) / 100.0; // Picks a value between 0.25 and 0.26
+    float voltage = random(509, 518) / 100.0; // Picks a value between 5.1 and 5.2
+    delay(1000);
+    send_soc_data(current, i+1.0, voltage);
+  }
+}
+
+void create_delay1(int mah_to_trade) {
+  for (int i = 0; i < mah_to_trade ; i++) {
+    float current = random(25, 27) / 100.0; // Picks a value between 0.25 and 0.26
+    float voltage = random(510, 521) / 100.0; // Picks a value between 5.1 and 5.2
+    delay(1000);
+    send_soc_data(current, i+1.0, voltage);
+  }
+}
+
+void trade_relay1(String mah_to_trade) {
   digitalWrite(relay1, HIGH);
-  // TODO: figure delay portion out
-  delay(3000);
+  int mah_to_trade_int = mah_to_trade.toInt();
+  create_delay1(mah_to_trade_int);
   digitalWrite(relay1, LOW);
   clear_trade();
 }
-void trade_relay2() {}
+void trade_relay2(String mah_to_trade) {
+  int mah_to_trade_int = mah_to_trade.toInt();
+  digitalWrite(relay2, HIGH);
+  create_delay2(mah_to_trade_int);
+  digitalWrite(relay2, LOW);
+  clear_trade();
+}
 
 
 void setup() {
@@ -98,82 +168,30 @@ void loop() {
   JsonDocument doc;
   while(true) {
     i++;
-    if (i%40000 == 0) {
+    if (i%400000 == 0) {
       i = 0;
       String payload = getTrade();
       deserializeJson(doc, payload);
-      String conductTrade = doc["conductTrade"];
+      String conductTrade = doc["conduct_trade"];
+      
 
-      if (conductTrade == "True") {
+      Serial.print("trade status ");
+      Serial.println(conductTrade);
+      if (conductTrade.equals("True")){
+        String mah_to_transmit = doc["mah_to_transmit"];
         String consumer = doc["consumer"];
-        if (consumer == "Buyer1") {
-          trade_relay1();
+        Serial.println(consumer);
+        if (consumer.equals("Buyer1")) {
+          Serial.println("Relay 1 executing trade");
+          trade_relay1(mah_to_transmit);
         }
-        else if (consumer == "Buyer2") {
-          trade_relay2();
+        else if (consumer.equals("Buyer2")) {
+          Serial.println("Relay 2 executing trade");
+          trade_relay2(mah_to_transmit);
         }
       }
+      delay(1000);
     }
 
   }
-  // while(true){
-  //   i++;
-  //   if (i%10000 == 0) {
-  //     i = 0;
-  //     if (WiFi.status() == WL_CONNECTED) {
-  //       HTTPClient http;
-  //       Serial.println("sending req");
-  //     // Your URL for the GET request 172.20.10.6
-  // //    http.begin("http://54.202.120.41:8001/get-command-arduino");
-  //       http.begin("http://172.20.10.6:8001/test/1");
-  //       http.addHeader("Content-Type", "application/json");
-  //       http.addHeader("x-api-key", "secret");
-  //       int httpCode = http.GET();
-  //       String payload = http.getString();
-        
-  //       Serial.println(httpCode);
-  //       Serial.println(payload);
-  //       deserializeJson(doc, payload);
-  
-  //       int relay_value = doc["number"];
-  
-  //       Serial.println(relay_value);
-  //       if (relay_value == 1);
-  //         digitalWrite(relay1, HIGH);
-  //         delay(3000);
-  //         digitalWrite(relay1, LOW);
-  //       }
-  //     else {
-  //       Serial.println("WIFI fucked up");
-  //       }
-  //     }
-  //   }
-
-// while(true) {
-//   if (WiFi.status() == WL_CONNECTED) {
-//     HTTPClient http;
-//     Serial.println("sending POST req");
-//     http.begin("http://172.20.10.6:8001/test_post"); // Your URL for the POST request
-//     http.addHeader("Content-Type", "application/json");
-//     http.addHeader("x-api-key", "secret");
-
-//     // Create JSON object to send
-//     StaticJsonDocument<200> jsonDoc;
-//     jsonDoc["device"] = "ESP32";
-//     jsonDoc["status"] = "active";
-//     String requestBody;
-//     serializeJson(jsonDoc, requestBody);
-
-//     int httpCode = http.POST(requestBody);
-//     String payload = http.getString();
-
-//     Serial.println(httpCode);
-//     Serial.println(payload);
-//   }
-//   else {
-//     Serial.println("WIFI not connected");
-//   }
-//   delay(10000); // Wait for 10 seconds before the next iteration
-// }
-
 }

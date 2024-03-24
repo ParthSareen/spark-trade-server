@@ -46,8 +46,8 @@ def setup_energy_market_with_buyers():
     # Instantiate the energy market
     energy_market = EnergyMarket()
     # Define buyers
-    buyer1 = Actor("Buyer1", "consumer", 1000, 1, 1)
-    buyer2 = Actor("Buyer2", "consumer", 1500, 1, 2)
+    buyer1 = Actor("Buyer1", "consumer", 1000, 4, 0)
+    buyer2 = Actor("Buyer2", "consumer", 1500, 0, 3)
     buyer3 = Actor("Buyer3", "consumer", 2000, 4, 3)
     buyer4 = Actor("Buyer3", "consumer", 2500, 4, 4)
 
@@ -56,8 +56,8 @@ def setup_energy_market_with_buyers():
     seller2 = Actor("Seller2", "producer", 1500, 3, 4)
 
     # Create bids
-    bid_buyer1 = Bid(35, 750, buyer1, True)
-    # bid_buyer2 = Bid(20, 750, buyer2, True)
+    bid_buyer1 = Bid(5, 30, buyer1, True)
+    bid_buyer2 = Bid(20, 25, buyer2, True)
     # bid_buyer3 = Bid(25, 1000, buyer3, True)
     # bid_buyer4 = Bid(30, 1250, buyer4, True)
     bid_seller1 = Bid(50, 2000, seller1, False)
@@ -65,7 +65,7 @@ def setup_energy_market_with_buyers():
 
     # Add bids to the market
     energy_market.add_bid(bid_buyer1)
-    # energy_market.add_bid(bid_buyer2)
+    energy_market.add_bid(bid_buyer2)
     # energy_market.add_bid(bid_buyer3)
     # energy_market.add_bid(bid_buyer4)
     # energy_market.add_bid(bid_seller1)

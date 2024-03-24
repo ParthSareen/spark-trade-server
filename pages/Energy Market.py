@@ -51,11 +51,10 @@ with create_sell_bid_expander:
         st.write("Enter your sell bid details:")
 
         seller_name = st.session_state['user']
-        # TODO: Pull this data from arduino
-        seller_capacity, seller_x, seller_y = 1000, 3, 1
+        seller_capacity, seller_x, seller_y = 1000, st.session_state['x'], st.session_state['y']
 
         sell_price = st.number_input("Price (CAD)", min_value=5.0, format="%.2f", key="sell_price_form")
-        sell_quantity = st.number_input("Quantity (mAh)", min_value=200, key="sell_quantity_form")
+        sell_quantity = st.number_input("Quantity (mAh)", min_value=10, key="sell_quantity_form")
         submit_button = st.form_submit_button("Submit Sell Bid")
 
     if submit_button:
@@ -92,7 +91,7 @@ if st.button('Submit for Matching'):
         st.success("Matching completed successfully!")
         # st.write(matched)
     else:
-        st.write("No matching bids found")
+        st.error("No matching bids found - possible matching in progress")
 
 # with col3:
 if st.button('Reset Market Ops'):

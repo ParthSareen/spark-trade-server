@@ -154,6 +154,21 @@ class EnergyMarket:
         print('\n')
     
 
+    def check_if_trade_exists(self) -> bool:
+        """
+        Checks if a trade exists by calling the '/check-trades' API endpoint.
+        Returns True if trades exist, False otherwise.
+        """
+        api_url = CURRENT_URL + "/check-trades"
+        headers = {"Content-Type": "application/json", "x-api-key": "secret"}
+        response = requests.get(api_url, headers=headers)
+        if response.status_code == 200:
+            trade_info = response.json()
+            return trade_info.get("trades_exist", False)
+        else:
+            print(f"Failed to check trades: {response.text}")
+            return False
+
     def save_trade(self, conduct_trade: bool, mah_to_transmit: float, seller: str, consumer: str):
         trade_record = {
             "conduct_trade": conduct_trade,
@@ -211,6 +226,12 @@ class EnergyMarket:
         self.save_bids_to_csv()
 
     def match_bid(self, input_bid: Bid, buying_bids_hash_and_dist: List) -> (float, float, Bid) | None:
+
+        trade_exists = self.check_if_trade_exists()
+
+        if trade_exists:
+            return None
+
         highest_bid_score = 0
         highest_bid: Bid = None
         highest_bid_hash = None
