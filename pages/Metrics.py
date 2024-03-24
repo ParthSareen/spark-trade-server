@@ -9,10 +9,14 @@ import time
 LOCAL_SERVER_URL = 'http://127.0.0.1:8001'
 ONLINE_SERVER_URL = 'http://54.202.120.41:8001'
 
-CURRENT_URL = LOCAL_SERVER_URL
+CURRENT_URL = ONLINE_SERVER_URL 
+
+
+st.set_page_config(page_title="Energy Metrics ⚡", page_icon="📊")
+st.title('Energy Metrics ⚡')
 
 def fetch_soc_data(username):
-    api_url = f"http://127.0.0.1:8001/get-soc-data/{username}"
+    api_url = CURRENT_URL + f"/get-soc-data/{username}"
     headers = {"x-api-key": "secret"}
     response = requests.get(api_url, headers=headers)
     if response.status_code == 200:
@@ -21,6 +25,7 @@ def fetch_soc_data(username):
     else:
         print(f"Failed to fetch SOC data: {response.text}")
         return pd.DataFrame()
+
 
 def display_soc_data(username):
     df_soc = fetch_soc_data(username)

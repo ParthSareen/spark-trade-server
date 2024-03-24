@@ -14,7 +14,7 @@ from icecream import ic
 LOCAL_SERVER_URL = 'http://127.0.0.1:8001'
 ONLINE_SERVER_URL = 'http://54.202.120.41:8001'
 
-CURRENT_URL = LOCAL_SERVER_URL
+CURRENT_URL = ONLINE_SERVER_URL 
 @dataclass
 class Actor:
     name: str

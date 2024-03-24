@@ -7,7 +7,7 @@ import requests
 LOCAL_SERVER_URL = 'http://127.0.0.1:8001'
 ONLINE_SERVER_URL = 'http://54.202.120.41:8001'
 
-CURRENT_URL = LOCAL_SERVER_URL
+CURRENT_URL = ONLINE_SERVER_URL 
 # Setup the energy market with 5 buyers
 def setup_energy_market_with_buyers():
 

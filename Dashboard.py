@@ -5,7 +5,8 @@ from icecream import ic
 import altair as alt
 import os
 
-st.session_state['flask_url'] = 'http://127.0.0.1:8001'
+# st.session_state['flask_url'] = 'http://127.0.0.1:8001'
+st.session_state['flask_url'] = 'http://54.202.120.41:8001'
 
 # Initialize the EnergyMarket
 market = EnergyMarket()
