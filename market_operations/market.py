@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 import requests
 from dataclasses import dataclass
 import datetime
@@ -10,6 +11,10 @@ import csv
 from icecream import ic
 
 
+LOCAL_SERVER_URL = 'http://127.0.0.1:8001'
+ONLINE_SERVER_URL = 'http://54.202.120.41:8001'
+
+CURRENT_URL = LOCAL_SERVER_URL
 @dataclass
 class Actor:
     name: str
@@ -34,6 +39,7 @@ class EnergyMarket:
         self.bids = {}
         self.grid = [[]]
         self.grid_df = None
+        self.matched_bids = []
         self.load_grid_from_csv()
         self.load_bids_from_csv()
         # ic('init', self.grid)
@@ -45,7 +51,7 @@ class EnergyMarket:
             files = {'file': (filename, file)}
             # ic(files)
             # Make the POST request to upload the CSV file
-            response = requests.post('http://127.0.0.1:8001/upload-csv', files=files)
+            response = requests.post(CURRENT_URL + '/upload-csv', files=files)
             
         # ic(response.text)
         return response
@@ -75,7 +81,7 @@ class EnergyMarket:
     
 
     def load_bids_from_csv(self, filename: str = "bids.csv") -> None:
-        self.download_csv_from_server('http://127.0.0.1:8001/download-csv/{}'.format(filename), filename)
+        self.download_csv_from_server(CURRENT_URL+'/download-csv/{}'.format(filename), filename)
         try:
             with open(filename, mode='r') as file:
                 reader = csv.DictReader(file)
@@ -90,7 +96,7 @@ class EnergyMarket:
 
 
     def load_grid_from_csv(self, filename: str = "market_grid.csv") -> None:
-        self.download_csv_from_server('http://127.0.0.1:8001/download-csv/{}'.format(filename), filename)
+        self.download_csv_from_server(CURRENT_URL + '/download-csv/{}'.format(filename), filename)
         try:
             df = pd.read_csv(filename, index_col=0, dtype=str)
             self.grid = df.values.tolist()
@@ -147,6 +153,22 @@ class EnergyMarket:
             print(" ".join(str(cell) for cell in row)) 
         print('\n')
     
+
+    def save_trade(self, conduct_trade: bool, mah_to_transmit: float, seller: str, consumer: str):
+        trade_record = {
+            "conduct_trade": conduct_trade,
+            "mah_to_transmit": mah_to_transmit,
+            "seller": seller,
+            "consumer": consumer
+        }
+        api_url = CURRENT_URL + "/save-trade"
+        headers = {"Content-Type": "application/json", "x-api-key": "secret"}
+        response = requests.post(api_url, headers=headers, data=json.dumps(trade_record))
+        if response.status_code == 200:
+            print("Trade saved successfully")
+        else:
+            print(f"Failed to save trade: {response.text}")
+
     
     def find_all_bids(self, input_bid: Bid) -> List[str]:
         self.load_grid_from_csv()
@@ -234,7 +256,17 @@ class EnergyMarket:
             with open(file_path, 'a', newline='') as file:
                 writer = csv.writer(file)
                 current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                writer.writerow([input_bid.actor.name, sell_price, sell_amt, matched_bid.actor.name, current_datetime])
+                trade_record = {
+                    "Buyer Name": input_bid.actor.name,
+                    "Sell Price": sell_price,
+                    "Sell Amount": sell_amt,
+                    "Seller Name": matched_bid.actor.name,
+                    "Datetime": current_datetime
+                }
+                writer.writerow([trade_record["Buyer Name"], trade_record["Sell Price"], trade_record["Sell Amount"], trade_record["Seller Name"], trade_record["Datetime"]])
+            
+            self.save_trade(conduct_trade=True, mah_to_transmit=sell_amt, seller=input_bid.actor.name, consumer=matched_bid.actor.name)
+            self.matched_bids.append(trade_record)
 
         else:
             return None

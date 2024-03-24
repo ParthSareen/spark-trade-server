@@ -1,4 +1,5 @@
 import json
+import shutil
 from flask import Flask, request, jsonify, abort
 import csv
 import datetime
@@ -27,6 +28,7 @@ SECRET_API_KEY = "secret"
 DIR = os.path.join(os.path.dirname(__file__), '../data')
 
 
+
 def get_command_file_path(user):
     """Generate the file path for a user's command file."""
     return os.path.join(DIR, f'{user}_command.json')
@@ -48,6 +50,73 @@ def check_resp_object(expected_object, data):
     return None
 
 
+@app.route('/test/<int:number>', methods=['GET'])
+def test(number):
+    return jsonify({"number": number}), 200
+
+@app.route('/test_post', methods=['POST'])
+def test_post():
+    if not request.is_json:
+        return jsonify({"error": "Request is not JSON"}), 400
+    data = request.get_json()
+    print(data)
+    return jsonify({"message": "Data received", "yourData": data}), 200
+
+@app.route('/get-trade', methods=['GET'])
+def get_trade():
+    check_api_key()
+    
+    try:
+        with open('test_data/trades.csv', 'r') as file:
+            reader = csv.reader(file)
+            try:
+                header = next(reader)
+                data = next(reader)
+            except StopIteration:  # This means the file is empty
+                return jsonify({"conduct_trade": True}), 200
+    except FileNotFoundError:  # This means the file does not exist
+        return jsonify({"conduct_trade": False}), 200
+    return jsonify(dict(zip(header, data))), 200
+
+
+@app.route('/delete-test-data', methods=['DELETE'])
+def delete_test_data():
+    check_api_key()
+    try:
+        for filename in os.listdir('test_data'):
+            file_path = os.path.join('test_data', filename)
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        return jsonify({'message': 'Test data deleted successfully'}), 200
+    except FileNotFoundError:
+        return jsonify({'error': 'Test data does not exist'}), 404
+
+# TODO: make sure file is empty before - figure it out 
+@app.route('/save-trade', methods=['POST'])
+def save_trade():
+    check_api_key()
+    
+    if not request.is_json:
+        return jsonify({"error": "Request is not JSON"}), 400
+    
+    data = request.get_json()
+    
+    with open('test_data/trades.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['conduct_trade', 'mah_to_transmit', 'seller', 'consumer'])
+        writer.writerow([data['conduct_trade'], data['mah_to_transmit'], data['seller'], data['consumer']])
+    return jsonify({'message': 'Trade saved successfully'}), 200
+
+
+@app.route('/clear-trade', methods=['GET'])
+def clear_trades():
+    check_api_key()
+    # Clear the file test_data/trades.csv
+    open('test_data/trades.csv', 'w').close()
+    return jsonify({'message': 'Trades cleared successfully'}), 200
+    
 @app.route('/update-csv', methods=['POST'])
 def update_csv():
     check_api_key()

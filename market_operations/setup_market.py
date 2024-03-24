@@ -1,7 +1,13 @@
 from market_operations.market import Actor, Bid, EnergyMarket
+# from market import Actor, Bid, EnergyMarket
 import pandas as pd
 import os
+import requests
 
+LOCAL_SERVER_URL = 'http://127.0.0.1:8001'
+ONLINE_SERVER_URL = 'http://54.202.120.41:8001'
+
+CURRENT_URL = LOCAL_SERVER_URL
 # Setup the energy market with 5 buyers
 def setup_energy_market_with_buyers():
 
@@ -9,7 +15,23 @@ def setup_energy_market_with_buyers():
     if os.path.exists("bids.csv"):
         os.remove("bids.csv")
     if os.path.exists("matched_bids.csv"):
-        os.remove("matched_bids.csv")   
+        os.remove("matched_bids.csv") 
+    
+
+    # Define the API endpoint for deleting test data
+    api_endpoint = CURRENT_URL + "/delete-test-data"
+    headers = {"x-api-key": "secret"}
+
+    # Make the DELETE request to the API
+    response = requests.delete(api_endpoint, headers=headers)
+
+    # Check the response status
+    if response.status_code == 200:
+        print("Test data deleted successfully.")
+    elif response.status_code == 404:
+        print("Test data does not exist.")
+    else:
+        print(f"Failed to delete test data: {response.text}")
 
     # Initialize market grid CSV
     df = pd.DataFrame('0', index=range(5), columns=range(5))
@@ -35,18 +57,18 @@ def setup_energy_market_with_buyers():
 
     # Create bids
     bid_buyer1 = Bid(35, 750, buyer1, True)
-    bid_buyer2 = Bid(20, 750, buyer2, True)
-    bid_buyer3 = Bid(25, 1000, buyer3, True)
-    bid_buyer4 = Bid(30, 1250, buyer4, True)
+    # bid_buyer2 = Bid(20, 750, buyer2, True)
+    # bid_buyer3 = Bid(25, 1000, buyer3, True)
+    # bid_buyer4 = Bid(30, 1250, buyer4, True)
     bid_seller1 = Bid(50, 2000, seller1, False)
     bid_seller2 = Bid(45, 1500, seller2, False)
 
     # Add bids to the market
     energy_market.add_bid(bid_buyer1)
-    energy_market.add_bid(bid_buyer2)
-    energy_market.add_bid(bid_buyer3)
-    energy_market.add_bid(bid_buyer4)
-    energy_market.add_bid(bid_seller1)
-    energy_market.add_bid(bid_seller2)
+    # energy_market.add_bid(bid_buyer2)
+    # energy_market.add_bid(bid_buyer3)
+    # energy_market.add_bid(bid_buyer4)
+    # energy_market.add_bid(bid_seller1)
+    # energy_market.add_bid(bid_seller2)
 
 setup_energy_market_with_buyers()
