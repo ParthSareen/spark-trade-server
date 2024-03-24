@@ -103,6 +103,19 @@ def write_soc_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/get-soc-data/<username>', methods=['GET'])
+def get_soc_data(username):
+    check_api_key()
+    try:
+        with open(f'data/{username}_soc.csv', 'r') as file:
+            reader = csv.reader(file)
+            next(reader)  # Skip the header
+            data = list(reader)
+            return jsonify(data), 200
+    except FileNotFoundError:
+        return jsonify({"error": "SOC data not found"}), 404
+
+
 
 @app.route('/check-trades', methods=['GET'])
 def check_trades():

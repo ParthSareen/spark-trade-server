@@ -3,7 +3,7 @@
 #include <HTTPClient.h>
 
 #define relay1 15
-#define relay2 23
+#define relay2 21
 
 const char* ssid = "Parth";
 const char* password = "cappingstone";

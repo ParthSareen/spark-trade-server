@@ -1,2 +1,3 @@
 hash,price,quantity,actor_name,actor_type,actor_capacity,x,y,buying
-Buyer1_5_True,5.0,30,Buyer1,consumer,1000.0,4,0,True
+Buyer1_5_True,5,30,Buyer1,consumer,1000,4,0,True
+Buyer2_20_True,20,25,Buyer2,consumer,1500,0,3,True
