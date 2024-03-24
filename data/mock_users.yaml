@@ -12,6 +12,12 @@ credentials:
       password: $2b$12$N9mX8o0F1LWlgARoRt0Ldu.pltfiMP.ewvJVBDn3t2JlT1BpZqvMK # this is def
       location_x: 0
       location_y: 4
+    jbiden:
+      email: jbiden@gmail.com
+      name: Joe Biden
+      password: $2b$12$N9mX8o0F1LWlgARoRt0Ldu.pltfiMP.ewvJVBDn3t2JlT1BpZqvMK # this is also def
+      location_x: 2
+      location_y: 3
       
 cookie:
   expiry_days: 30
