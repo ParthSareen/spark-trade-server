@@ -56,13 +56,17 @@ with create_buy_bid_expander:
         st.write("Enter your buy bid details:")
 
         # TODO: pull this data from arduino
-        buyer_capacity, buyer_x, buyer_y = 1000, 3, 1
+        buyer_capacity, buyer_x, buyer_y = 1000, st.session_state['x'], st.session_state['y']
 
         buy_price = st.number_input("Price (CAD)", min_value=5.0, format="%.2f", key="buy_price_form")
         buy_quantity = st.number_input("Quantity (mAh)", min_value=200, key="buy_quantity_form")
         submit_button = st.form_submit_button("Submit Buy Bid")
 
     if submit_button:
+        if buyer_name == "rbriggs":
+            buyer_name = "Buyer1"
+        else:
+            buyer_name = "Buyer2"
         buyer = Actor(buyer_name, "producer", buyer_capacity, buyer_x, buyer_y)
         buy_bid = Bid(buy_price, buy_quantity, buyer, True)
         try:
